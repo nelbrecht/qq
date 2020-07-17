@@ -1,0 +1,96 @@
+package payload
+
+import (
+	"io"
+	"strings"
+)
+
+// OpenPGPPayload encapsulates public key, signature and message to
+// check a signature.
+type OpenPGPPayload struct {
+	KeyRingReader      io.Reader
+	Signature          io.Reader
+	VerificationTarget io.Reader
+}
+
+// X exports getExample().
+func X() OpenPGPPayload {
+	return GetExample()
+}
+
+// GetExample gets a prefilled message.
+func GetExample() OpenPGPPayload {
+
+	pl := OpenPGPPayload{
+		KeyRingReader: strings.NewReader(`
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: Keybase OpenPGP JS 0.0.1
+Comment: https://keybase.io/fiatjaf
+
+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
+=+ow3
+-----END PGP PUBLIC KEY BLOCK-----
+`),
+		Signature: strings.NewReader(`
+-----BEGIN PGP SIGNATURE-----
+
+wsBcBAABCAAQBQJZxpqaCRACbO6WzpfsagAAGxUIADhrhyJUG9zsDMDdDSBtDYE5
+H/I5eRxMbklF/LCGF67UXQHYcqi0sxDK/NR4Ld9iUhrj/g/hqqGdo03gDKL9FTMJ
+3D6ttSBjkv9eacXaRSxBFsQHwXGU1mC5ZR6mCsxyfLESNxd27s8/5sP+62AkhC17
+hqFpp/n2gcUn9dOd0X/pUQ+0RV6GZWQlSg/ds4Ff0dX5d7+z30xqhMPuGKfxZIk6
+57AjmbYvkoRaMkbVLl7uIDVkt30Ww/WLoL8KyOl+NDwfl6d8TX3MalfidDd7kvad
+11L9/ZZ6SuFNXPaMDsZomThuz8/J+qAfdyHBV8xyz2bTXa2SJNxdxtkUf3m+1rA=
+=5/WZ
+-----END PGP SIGNATURE-----
+`),
+		VerificationTarget: strings.NewReader(`bla
+`),
+	}
+	return pl
+}
