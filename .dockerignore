@@ -1,0 +1,7 @@
+.*/
+doc/
+ext/
+mops/
+pkg/
+proto/
+vendor/

@@ -41,13 +41,13 @@ jobs:
       run: echo ::set-env name=VERSION::${GITHUB_REF##*/}
 
     - name: Build
-      run: go build -v . && ls -lart
+      run: GOOS=linux GOARCH=amd64 go build -v -a -ldflags '-extldflags "-static"' . && file ${GH_REPO_NAME}
 
     - name: Test
-      run: go test -cover -race -v ./... && ls -lart
+      run: go test -cover -race -v ./...
 
     - name: Run
-      run: env && ./${GH_REPO_NAME}
+      run: env && file ${GH_REPO_NAME} && ./${GH_REPO_NAME}
 
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2
@@ -55,3 +55,13 @@ jobs:
         name: linux-${{ env.GH_REPO_NAME }}-${{ env.VERSION }}
         path: ${{env.GH_REPO_NAME}}
         # release_name: ${{ env.GH_REPO_NAME }} ${{ env.VERSION }}
+
+    - name: Push to GitHub Packages
+      uses: docker/build-push-action@v1
+      with:
+        username: ${{ github.actor }}
+        #password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ github.token }}
+        registry: docker.pkg.github.com
+        repository: nelbrecht/qq/${{ env.GH_REPO_NAME }}
+        tag_with_ref: true
